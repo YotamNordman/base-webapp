@@ -7,6 +7,7 @@ export interface Exercise {
   weight?: number;
   notes?: string;
   restTime?: number;
+  duration?: number; // in seconds
 }
 
 // WorkoutCard component props interface
