@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Card, 
@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
+import { logger } from '../../utils';
 import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
@@ -38,7 +39,7 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (error: any) {
-      console.error('Login form error:', error);
+      logger.error('Login form error:', error);
       setLoginError(error.message || 'התחברות נכשלה. אנא בדוק את שם המשתמש והסיסמה');
     }
   };

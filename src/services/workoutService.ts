@@ -1,16 +1,13 @@
 import { Workout } from '../types/workout';
+import { getApiBaseUrl, getAuthHeader as configGetAuthHeader, isMockModeEnabled } from '../config';
 
-// Base API URL - would be configured from environment variables in a real app
-const API_BASE_URL = 'http://localhost:5015/api';
+// Get base API URL from configuration
+const API_BASE_URL = getApiBaseUrl();
+// Check if we should use mock data
+const USE_MOCK_DATA = isMockModeEnabled();
 
-// Helper function to get auth header
-const getAuthHeader = (): HeadersInit => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+// Use auth header from config
+const getAuthHeader = configGetAuthHeader;
 
 // Mock data for development when backend is not available
 const mockWorkouts: Workout[] = [
@@ -140,6 +137,11 @@ const findMockWorkoutById = (id: string): Workout | undefined => {
 
 export const workoutService = {
   getWorkouts: async (): Promise<Workout[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return [...mockWorkouts];
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/workouts`, {
         headers: getAuthHeader(),
@@ -156,6 +158,15 @@ export const workoutService = {
   },
 
   getWorkoutById: async (id: string): Promise<Workout> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      const mockWorkout = findMockWorkoutById(id);
+      if (mockWorkout) {
+        return { ...mockWorkout };
+      }
+      throw new Error(`Workout with id ${id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/workouts/${id}`, {
         headers: getAuthHeader(),
@@ -176,6 +187,17 @@ export const workoutService = {
   },
 
   createWorkout: async (workout: Omit<Workout, 'id' | 'createdAt'>): Promise<Workout> => {
+    // If mock mode is enabled, create in mock data
+    if (USE_MOCK_DATA) {
+      const newWorkout: Workout = {
+        ...workout,
+        id: `mock-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+      };
+      mockWorkouts.push(newWorkout);
+      return newWorkout;
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/workouts`, {
         method: 'POST',
@@ -200,6 +222,16 @@ export const workoutService = {
   },
 
   updateWorkout: async (workout: Workout): Promise<Workout> => {
+    // If mock mode is enabled, update in mock data
+    if (USE_MOCK_DATA) {
+      const index = mockWorkouts.findIndex(w => w.id === workout.id);
+      if (index !== -1) {
+        mockWorkouts[index] = { ...workout };
+        return { ...workout };
+      }
+      throw new Error(`Workout with id ${workout.id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/workouts/${workout.id}`, {
         method: 'PUT',
@@ -223,6 +255,16 @@ export const workoutService = {
   },
 
   deleteWorkout: async (id: string): Promise<void> => {
+    // If mock mode is enabled, delete from mock data
+    if (USE_MOCK_DATA) {
+      const index = mockWorkouts.findIndex(w => w.id === id);
+      if (index !== -1) {
+        mockWorkouts.splice(index, 1);
+        return;
+      }
+      throw new Error(`Workout with id ${id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/workouts/${id}`, {
         method: 'DELETE',
@@ -244,6 +286,16 @@ export const workoutService = {
   },
 
   completeWorkout: async (id: string): Promise<Workout> => {
+    // If mock mode is enabled, handle in mock data
+    if (USE_MOCK_DATA) {
+      const workout = findMockWorkoutById(id);
+      if (workout) {
+        workout.completed = true;
+        return { ...workout };
+      }
+      throw new Error(`Workout with id ${id} not found in mock data`);
+    }
+    
     try {
       // In a real application, this would be a separate endpoint
       const workout = await workoutService.getWorkoutById(id);

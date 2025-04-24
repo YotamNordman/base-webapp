@@ -131,7 +131,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
               <EventIcon fontSize="small" sx={{ mr: 0.5 }} />
-              החל ב: {formatDate(client.startDate)}
+              החל ב: {client.membershipDetails ? formatDate(client.membershipDetails.startDate) : 'N/A'}
             </Typography>
           </Box>
         </CardContent>

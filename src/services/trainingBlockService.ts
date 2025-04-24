@@ -1,16 +1,13 @@
 import { TrainingBlock, TrainingWeek } from '../types/trainingBlock';
+import { getApiBaseUrl, getAuthHeader as configGetAuthHeader, isMockModeEnabled } from '../config';
 
-// Base API URL - would be configured from environment variables in a real app
-const API_BASE_URL = 'http://localhost:5015/api';
+// Get base API URL from configuration
+const API_BASE_URL = getApiBaseUrl();
+// Check if we should use mock data
+const USE_MOCK_DATA = isMockModeEnabled();
 
-// Helper function to get auth header
-const getAuthHeader = (): HeadersInit => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+// Use auth header from config
+const getAuthHeader = configGetAuthHeader;
 
 // Mock data for development when backend is not available
 const mockTrainingBlocks: TrainingBlock[] = [
@@ -271,6 +268,11 @@ const getMockAssignedBlocks = (): TrainingBlock[] => {
 
 export const trainingBlockService = {
   getBlocks: async (): Promise<TrainingBlock[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return getMockAssignedBlocks();
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks`, {
         headers: getAuthHeader(),
@@ -286,6 +288,11 @@ export const trainingBlockService = {
   },
 
   getTemplates: async (): Promise<TrainingBlock[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return getMockTemplates();
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks/templates`, {
         headers: getAuthHeader(),
@@ -301,6 +308,15 @@ export const trainingBlockService = {
   },
 
   getBlockById: async (id: string): Promise<TrainingBlock> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      const mockBlock = findMockBlockById(id);
+      if (mockBlock) {
+        return { ...mockBlock };
+      }
+      throw new Error(`Training block with id ${id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks/${id}`, {
         headers: getAuthHeader(),
@@ -320,6 +336,22 @@ export const trainingBlockService = {
   },
 
   createBlock: async (block: Omit<TrainingBlock, 'id' | 'createdAt'>): Promise<TrainingBlock> => {
+    // If mock mode is enabled, create in mock data
+    if (USE_MOCK_DATA) {
+      const newBlock: TrainingBlock = {
+        ...block,
+        id: `mock-block-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        weeks: block.weeks?.map((week, index) => ({
+          ...week,
+          id: `mock-week-${Date.now()}-${index}`,
+          blockId: `mock-block-${Date.now()}`
+        })) || []
+      };
+      mockTrainingBlocks.push(newBlock);
+      return newBlock;
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks`, {
         method: 'POST',
@@ -348,6 +380,16 @@ export const trainingBlockService = {
   },
 
   updateBlock: async (block: TrainingBlock): Promise<TrainingBlock> => {
+    // If mock mode is enabled, update in mock data
+    if (USE_MOCK_DATA) {
+      const index = mockTrainingBlocks.findIndex(b => b.id === block.id);
+      if (index !== -1) {
+        mockTrainingBlocks[index] = { ...block };
+        return { ...block };
+      }
+      throw new Error(`Training block with id ${block.id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks/${block.id}`, {
         method: 'PUT',
@@ -370,6 +412,16 @@ export const trainingBlockService = {
   },
 
   deleteBlock: async (id: string): Promise<void> => {
+    // If mock mode is enabled, delete from mock data
+    if (USE_MOCK_DATA) {
+      const index = mockTrainingBlocks.findIndex(b => b.id === id);
+      if (index !== -1) {
+        mockTrainingBlocks.splice(index, 1);
+        return;
+      }
+      throw new Error(`Training block with id ${id} not found in mock data`);
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks/${id}`, {
         method: 'DELETE',
@@ -390,6 +442,41 @@ export const trainingBlockService = {
   },
 
   assignBlockToClient: async (blockId: string, clientId: string): Promise<TrainingBlock> => {
+    // If mock mode is enabled, handle in mock data
+    if (USE_MOCK_DATA) {
+      // Find the template block and create a copy assigned to the client
+      const templateBlock = findMockBlockById(blockId);
+      
+      if (!templateBlock) {
+        throw new Error(`Training block template with id ${blockId} not found in mock data`);
+      }
+      
+      // Get a mock client name based on client ID
+      let clientName = 'Unknown Client';
+      if (clientId === '1') clientName = 'John Doe';
+      else if (clientId === '2') clientName = 'Jane Smith';
+      else if (clientId === '3') clientName = 'Michael Johnson';
+      
+      const assignedBlock: TrainingBlock = {
+        ...templateBlock,
+        id: `assigned-${Date.now()}`,
+        clientId: clientId,
+        clientName: clientName,
+        isTemplate: false,
+        createdAt: new Date().toISOString(),
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 8 * 7 * 24 * 60 * 60 * 1000).toISOString(), // 8 weeks from now
+        weeks: templateBlock.weeks.map((week, index) => ({
+          ...week,
+          id: `assigned-week-${Date.now()}-${index}`,
+          blockId: `assigned-${Date.now()}`
+        }))
+      };
+      
+      mockTrainingBlocks.push(assignedBlock);
+      return assignedBlock;
+    }
+    
     try {
       const response = await fetch(`${API_BASE_URL}/trainingblocks/${blockId}/assign/${clientId}`, {
         method: 'POST',

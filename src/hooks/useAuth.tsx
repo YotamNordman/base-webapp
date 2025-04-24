@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '../utils';
 
 // Define user type to match backend
 interface User {
@@ -53,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     
     try {
-      console.log('Attempting login with:', { email, password });
+      logger.info('Attempting login with:', { email });
       
       // Match backend model - uses Email, not email
       const payload = {
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         Password: password
       };
       
-      console.log('Sending payload:', payload);
+      logger.info('Sending auth payload');
       
       // Improved request with proper CORS handling
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -74,11 +75,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(payload),
       });
       
-      console.log('Login response status:', response.status);
+      logger.info('Login response status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Login failed response:', errorText);
+        logger.error('Login failed response:', errorText);
         let errorMessage = 'התחברות נכשלה';
         
         try {
@@ -93,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const data = await response.json();
-      console.log('Login successful, user:', data.user);
+      logger.info('Login successful, user:', data.user);
       
       if (!data.token) {
         throw new Error('No authentication token received from server');
@@ -106,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
     } catch (err: any) {
-      console.error('Login error:', err);
+      logger.error('Login error:', err);
       setError(err.message || 'התחברות נכשלה. נא לנסות שוב.');
     } finally {
       setLoading(false);

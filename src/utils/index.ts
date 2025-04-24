@@ -1,4 +1,6 @@
 export { default as rtlPlugin } from './rtlPlugin';
+export { logger } from './logger';
+export { markAsUnused, isPresent } from './codeUtils';
 
 // Get auth header for API requests
 export const getAuthHeader = () => {

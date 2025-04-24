@@ -22,7 +22,8 @@ import {
   Person as PersonIcon,
   FlagOutlined as FlagIcon,
   Add as AddIcon,
-  AssignmentOutlined as AssignIcon
+  AssignmentOutlined as AssignIcon,
+  AutoAwesome as MethodologyIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,7 +34,12 @@ import {
   selectBlockError, 
   deleteBlock 
 } from '../../store/slices/trainingBlocksSlice';
+import { 
+  fetchMethodologyById,
+  selectCurrentMethodology
+} from '../../store/slices/methodologiesSlice';
 import TrainingWeekCard from '../../components/common/cards/training-week-card';
+import { MethodologyDetails } from '../../components/widgets';
 import { TrainingWeek } from '../../types/trainingBlock';
 import { AppDispatch } from '../../store';
 
@@ -45,6 +51,7 @@ const TrainingBlockDetailPage: React.FC = () => {
   const block = useSelector(selectSelectedBlock);
   const status = useSelector(selectBlockStatus);
   const error = useSelector(selectBlockError);
+  const methodology = useSelector(selectCurrentMethodology);
   
   // Track expanded weeks
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
@@ -54,6 +61,13 @@ const TrainingBlockDetailPage: React.FC = () => {
       dispatch(fetchBlockById(id));
     }
   }, [id, dispatch]);
+  
+  // Fetch methodology when block is loaded
+  useEffect(() => {
+    if (block?.methodologyId) {
+      dispatch(fetchMethodologyById(block.methodologyId));
+    }
+  }, [block, dispatch]);
   
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -209,10 +223,19 @@ const TrainingBlockDetailPage: React.FC = () => {
             </Typography>
           </Box>
           
-          <Chip 
-            label={block.isTemplate ? "תבנית" : "מוקצה"} 
-            color={block.isTemplate ? "primary" : "success"}
-          />
+          <Box display="flex" gap={1}>
+            {block.methodologyId && (
+              <Chip 
+                icon={<MethodologyIcon />}
+                label="Methodology Applied" 
+                color="secondary"
+              />
+            )}
+            <Chip 
+              label={block.isTemplate ? "תבנית" : "מוקצה"} 
+              color={block.isTemplate ? "primary" : "success"}
+            />
+          </Box>
         </Box>
         
         <Divider sx={{ mb: 3 }} />
@@ -316,6 +339,15 @@ const TrainingBlockDetailPage: React.FC = () => {
           </Button>
         </Box>
       </Paper>
+
+      {/* Methodology Section */}
+      {methodology && (
+        <MethodologyDetails 
+          methodology={methodology}
+          selectedBlockType={methodology.blockTypes.find(bt => bt.id === block.blockTypeId)}
+          selectedWorkoutType={methodology.workoutTypes.find(wt => wt.id === block.workoutTypeId)}
+        />
+      )}
       
       {/* Weeks section */}
       <Box sx={{ mb: 4 }}>

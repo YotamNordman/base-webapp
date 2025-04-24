@@ -1,14 +1,12 @@
-// Base API URL - would be configured from environment variables in a real app
-const API_BASE_URL = 'http://localhost:5015/api';
+import { getApiBaseUrl, getAuthHeader as configGetAuthHeader, isMockModeEnabled } from '../config';
 
-// Helper function to get auth header
-const getAuthHeader = (): HeadersInit => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+// Get base API URL from configuration
+const API_BASE_URL = getApiBaseUrl();
+// Check if we should use mock data
+const USE_MOCK_DATA = isMockModeEnabled();
+
+// Use auth header from config
+const getAuthHeader = configGetAuthHeader;
 
 // Types for dashboard data
 export interface DashboardStat {
@@ -141,6 +139,15 @@ const mockUpcomingClients: DashboardClient[] = [
 export const dashboardService = {
   // Get full dashboard data in one request
   getDashboardData: async (): Promise<DashboardData> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return {
+        stats: mockStats,
+        todaysWorkouts: mockTodaysWorkouts,
+        upcomingClients: mockUpcomingClients
+      };
+    }
+    
     try {
       // Try to fetch from API first
       const response = await fetch(`${API_BASE_URL}/dashboard`, {
@@ -171,6 +178,11 @@ export const dashboardService = {
 
   // Get dashboard statistics
   getStats: async (): Promise<DashboardStat[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return mockStats;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/dashboard/stats`, {
         headers: getAuthHeader(),
@@ -190,6 +202,11 @@ export const dashboardService = {
 
   // Get today's workouts
   getTodaysWorkouts: async (): Promise<DashboardWorkout[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return mockTodaysWorkouts;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/dashboard/todays-workouts`, {
         headers: getAuthHeader(),
@@ -209,6 +226,11 @@ export const dashboardService = {
 
   // Get upcoming clients
   getUpcomingClients: async (): Promise<DashboardClient[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return mockUpcomingClients;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/dashboard/upcoming-clients`, {
         headers: getAuthHeader(),
