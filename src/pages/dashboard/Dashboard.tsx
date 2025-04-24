@@ -716,23 +716,6 @@ const Dashboard: React.FC = () => {
                           borderRadius: 2.5,
                           mb: 2,
                           border: `1px solid ${alpha(theme.palette.divider, 0.4)}`,
-                          boxShadow: '0 3px 10px rgba(0,0,0,0.03)',
-                          '&:hover': { 
-                            bgcolor: alpha(theme.palette.info.main, 0.04),
-                            borderColor: theme.palette.info.main,
-                            transform: 'translateY(-5px)',
-                            boxShadow: `0 8px 20px -5px ${alpha(theme.palette.info.main, 0.15)}`,
-                            transition: 'all 0.3s ease'
-                          },
-                          cursor: 'pointer'
-                          boxShadow: '0 3px 10px rgba(0,0,0,0.03)',
-                          '&:hover': { 
-                            bgcolor: alpha(theme.palette.info.main, 0.04),
-                            borderColor: theme.palette.info.main,
-                            transform: 'translateY(-5px)',
-                            boxShadow: `0 8px 20px -5px ${alpha(theme.palette.info.main, 0.15)}`,
-                            transition: 'all 0.3s ease'
-                          },
                           cursor: 'pointer'
                         }}
                       >
