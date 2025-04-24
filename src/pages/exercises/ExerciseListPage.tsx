@@ -26,6 +26,7 @@ import {
   Refresh as RefreshIcon,
   FitnessCenter as FitnessCenterIcon
 } from '@mui/icons-material';
+import ExerciseCsvImport from '../../components/widgets/exercise-csv-import';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   fetchCategories,
@@ -144,6 +145,37 @@ const ExerciseListPage: React.FC = () => {
           >
             <RefreshIcon />
           </IconButton>
+          
+          <ExerciseCsvImport onImportComplete={handleRefresh} />
+          
+          <Button 
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              // Call export API to sync with mobile backend
+              fetch(`${import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api'}/exercises/export`)
+                .then(response => {
+                  if (response.ok) {
+                    return response.json();
+                  }
+                  throw new Error('Failed to export exercises');
+                })
+                .then(data => {
+                  setSnackbarMessage(data.message || 'יוצאו בהצלחה תבניות תרגילים לאפליקציה');
+                  setSnackbarSeverity('success');
+                  setSnackbarOpen(true);
+                })
+                .catch(error => {
+                  console.error('Export error:', error);
+                  setSnackbarMessage('שגיאה ביצוא התרגילים לאפליקציה');
+                  setSnackbarSeverity('error');
+                  setSnackbarOpen(true);
+                });
+            }}
+            sx={{ mr: 1 }}
+          >
+            סנכרון לאפליקציה
+          </Button>
           
           <Button 
             variant="contained" 
