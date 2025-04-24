@@ -22,7 +22,8 @@ import {
   Clients, 
   ClientDetails, 
   ClientCreatePage, 
-  ClientEditPage 
+  ClientEditPage,
+  ClientListPage
 } from './pages/clients';
 import WorkoutListPage from './pages/workouts/WorkoutListPage';
 import WorkoutDetailPage from './pages/workouts/WorkoutDetailPage';
@@ -132,7 +133,7 @@ const appRoutes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <Clients />
+            element: <ClientListPage />
           },
           {
             path: 'new',

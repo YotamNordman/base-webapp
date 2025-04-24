@@ -18,14 +18,20 @@ import {
   Alert,
   CircularProgress,
   SelectChangeEvent,
-  Snackbar
+  Snackbar,
+  Tooltip,
+  Fab,
+  alpha,
+  useTheme
 } from '@mui/material';
 import { 
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  FitnessCenter as FitnessCenterIcon
+  FitnessCenter as FitnessCenterIcon,
+  ContentCopy as CopyIcon,
+  List as ListIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -41,6 +47,7 @@ import {
 import { Exercise } from '../../components/common/cards/workout-card/types';
 import { AppDispatch } from '../../store';
 import { Workout } from '../../types/workout';
+import { ExerciseSelectionDialog } from '../../components/widgets/exercise-selector';
 
 // Default empty exercise template
 const emptyExercise: Exercise = {
@@ -68,6 +75,7 @@ const WorkoutFormPage: React.FC = () => {
   const existingWorkout = useSelector(selectSelectedWorkout);
   const status = useSelector(selectWorkoutStatus);
   const error = useSelector(selectWorkoutError);
+  const theme = useTheme();
   
   // Form state
   const [formData, setFormData] = useState<Omit<Workout, 'id' | 'createdAt'>>({
@@ -84,6 +92,8 @@ const WorkoutFormPage: React.FC = () => {
   
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [selectedExerciseIndex, setSelectedExerciseIndex] = useState<number | null>(null);
   
   // Load workout data for edit mode
   useEffect(() => {
@@ -163,10 +173,38 @@ const WorkoutFormPage: React.FC = () => {
   
   // Add a new exercise
   const handleAddExercise = () => {
-    setFormData(prev => ({
-      ...prev,
-      exercises: [...prev.exercises, { ...emptyExercise }]
-    }));
+    setSelectedExerciseIndex(null);
+    setExerciseDialogOpen(true);
+  };
+  
+  // Open exercise dialog for an existing exercise
+  const handleEditExercise = (index: number) => {
+    setSelectedExerciseIndex(index);
+    setExerciseDialogOpen(true);
+  };
+  
+  // Handle exercise selected from exercise dialog
+  const handleExerciseSelected = (exercise: Exercise) => {
+    if (selectedExerciseIndex !== null) {
+      // Update existing exercise
+      setFormData(prev => {
+        const updatedExercises = [...prev.exercises];
+        updatedExercises[selectedExerciseIndex] = {
+          ...updatedExercises[selectedExerciseIndex],
+          ...exercise
+        };
+        return {
+          ...prev,
+          exercises: updatedExercises
+        };
+      });
+    } else {
+      // Add new exercise
+      setFormData(prev => ({
+        ...prev,
+        exercises: [...prev.exercises, exercise]
+      }));
+    }
   };
   
   // Remove an exercise
@@ -177,6 +215,51 @@ const WorkoutFormPage: React.FC = () => {
       return {
         ...prev,
         exercises: updatedExercises.length > 0 ? updatedExercises : [{ ...emptyExercise }]
+      };
+    });
+  };
+
+  // Duplicate an exercise
+  const handleDuplicateExercise = (index: number) => {
+    setFormData(prev => {
+      const updatedExercises = [...prev.exercises];
+      const exerciseToDuplicate = { ...updatedExercises[index] };
+      
+      // Remove any ID to ensure it's treated as a new exercise
+      if (exerciseToDuplicate.id) {
+        delete exerciseToDuplicate.id;
+      }
+      
+      // Insert the duplicated exercise after the original
+      updatedExercises.splice(index + 1, 0, exerciseToDuplicate);
+      
+      return {
+        ...prev,
+        exercises: updatedExercises
+      };
+    });
+  };
+
+  // Move exercise up or down
+  const handleMoveExercise = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) || 
+      (direction === 'down' && index === formData.exercises.length - 1)
+    ) {
+      return; // Can't move further in this direction
+    }
+    
+    setFormData(prev => {
+      const updatedExercises = [...prev.exercises];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      
+      // Swap the exercises
+      [updatedExercises[index], updatedExercises[targetIndex]] = 
+        [updatedExercises[targetIndex], updatedExercises[index]];
+      
+      return {
+        ...prev,
+        exercises: updatedExercises
       };
     });
   };
@@ -360,46 +443,111 @@ const WorkoutFormPage: React.FC = () => {
           {/* Exercises section */}
           <Grid item xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Box 
+              display="flex" 
+              justifyContent="space-between" 
+              alignItems="center" 
+              mb={2}
+              sx={{
+                bgcolor: alpha(theme.palette.primary.main, 0.05),
+                p: 2,
+                borderRadius: 1
+              }}
+            >
               <Typography variant="h6" fontWeight="bold">
                 תרגילים
               </Typography>
-              <Button 
-                startIcon={<AddIcon />} 
-                onClick={handleAddExercise}
-                variant="outlined"
-                color="primary"
-              >
-                הוסף תרגיל
-              </Button>
+              <Tooltip title="הוסף תרגיל חדש">
+                <Button 
+                  startIcon={<AddIcon />} 
+                  onClick={handleAddExercise}
+                  variant="contained"
+                  color="primary"
+                  sx={{ fontWeight: 'bold' }}
+                >
+                  הוסף תרגיל
+                </Button>
+              </Tooltip>
             </Box>
           </Grid>
           
           <Grid item xs={12}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ mb: 2, fontStyle: 'italic' }}
+            >
+              השתמש בכפתורי החיצים כדי לשנות את סדר התרגילים. לחץ על כפתור השכפול כדי ליצור עותק של תרגיל.
+            </Typography>
+            
             {formData.exercises.map((exercise, index) => (
               <Card 
-                key={index} 
+                key={`exercise-${index}`}
                 sx={{ 
                   mb: 2, 
+                  borderRadius: 2,
+                  transition: 'all 0.2s ease',
                   borderRight: 4, 
-                  borderColor: 'primary.main'
+                  borderColor: 'primary.main',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
                 }}
               >
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Box display="flex" alignItems="center">
+                      <Box 
+                        sx={{
+                          mr: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary'
+                        }}
+                      >
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleMoveExercise(index, 'up')}
+                          disabled={index === 0}
+                        >
+                          <ArrowBackIcon />
+                        </IconButton>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleMoveExercise(index, 'down')}
+                          disabled={index === formData.exercises.length - 1}
+                        >
+                          <ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />
+                        </IconButton>
+                      </Box>
                       <FitnessCenterIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography variant="subtitle1" fontWeight="bold">
                         תרגיל {index + 1}
                       </Typography>
                     </Box>
-                    <IconButton 
-                      onClick={() => handleRemoveExercise(index)}
-                      color="error"
-                      disabled={formData.exercises.length === 1}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Box>
+                      <Tooltip title="שכפל תרגיל">
+                        <IconButton
+                          onClick={() => handleDuplicateExercise(index)}
+                          color="primary"
+                          sx={{ mr: 1 }}
+                        >
+                          <CopyIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="הסר תרגיל">
+                        <span>
+                          <IconButton 
+                            onClick={() => handleRemoveExercise(index)}
+                            color="error"
+                            disabled={formData.exercises.length === 1}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Box>
                   </Box>
                   
                   <Grid container spacing={2}>
@@ -410,6 +558,23 @@ const WorkoutFormPage: React.FC = () => {
                         label="שם התרגיל"
                         value={exercise.name}
                         onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
+                        onClick={() => handleEditExercise(index)}
+                        InputProps={{
+                          endAdornment: (
+                            <Tooltip title="בחר מתוך מאגר התרגילים">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent parent onClick from triggering
+                                  handleEditExercise(index);
+                                }}
+                              >
+                                <ListIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ),
+                        }}
                       />
                     </Grid>
                     
@@ -422,6 +587,9 @@ const WorkoutFormPage: React.FC = () => {
                         value={exercise.sets}
                         onChange={(e) => handleExerciseChange(index, 'sets', Number(e.target.value))}
                         inputProps={{ min: 1, max: 20 }}
+                        InputProps={{
+                          sx: { fontWeight: 'bold' }
+                        }}
                       />
                     </Grid>
                     
@@ -434,6 +602,9 @@ const WorkoutFormPage: React.FC = () => {
                         value={exercise.reps}
                         onChange={(e) => handleExerciseChange(index, 'reps', Number(e.target.value))}
                         inputProps={{ min: 1, max: 100 }}
+                        InputProps={{
+                          sx: { fontWeight: 'bold' }
+                        }}
                       />
                     </Grid>
                     
@@ -445,6 +616,9 @@ const WorkoutFormPage: React.FC = () => {
                         value={exercise.weight}
                         onChange={(e) => handleExerciseChange(index, 'weight', Number(e.target.value))}
                         inputProps={{ min: 0, max: 1000 }}
+                        InputProps={{
+                          sx: { fontWeight: 'bold' }
+                        }}
                       />
                     </Grid>
                     
@@ -454,6 +628,7 @@ const WorkoutFormPage: React.FC = () => {
                         label="הערות"
                         value={exercise.notes || ''}
                         onChange={(e) => handleExerciseChange(index, 'notes', e.target.value)}
+                        placeholder="הוסף הערות או הנחיות מיוחדות לתרגיל..."
                       />
                     </Grid>
                   </Grid>
@@ -465,11 +640,21 @@ const WorkoutFormPage: React.FC = () => {
           {/* Submit buttons */}
           <Grid item xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Box display="flex" justifyContent="flex-end" gap={2}>
+            <Box 
+              display="flex" 
+              justifyContent="space-between" 
+              alignItems="center"
+              sx={{
+                bgcolor: alpha(theme.palette.background.default, 0.7),
+                p: 2,
+                borderRadius: 1
+              }}
+            >
               <Button 
                 variant="outlined" 
                 onClick={handleBack}
                 startIcon={<ArrowBackIcon />}
+                sx={{ fontWeight: 'medium' }}
               >
                 ביטול
               </Button>
@@ -479,6 +664,12 @@ const WorkoutFormPage: React.FC = () => {
                 color="primary" 
                 startIcon={<SaveIcon />}
                 disabled={status === 'loading'}
+                sx={{ 
+                  fontWeight: 'bold',
+                  px: 4,
+                  py: 1,
+                  boxShadow: 2
+                }}
               >
                 {isEditMode ? 'עדכן אימון' : 'צור אימון'}
                 {status === 'loading' && <CircularProgress size={20} sx={{ ml: 1 }} />}
@@ -493,6 +684,32 @@ const WorkoutFormPage: React.FC = () => {
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
+      />
+
+      {/* Floating Action Button for Exercise Library */}
+      <Tooltip title="בחר מתוך מאגר תרגילים">
+        <Fab
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000
+          }}
+          onClick={() => {
+            setSelectedExerciseIndex(null);
+            setExerciseDialogOpen(true);
+          }}
+        >
+          <ListIcon />
+        </Fab>
+      </Tooltip>
+      
+      {/* Exercise Selection Dialog */}
+      <ExerciseSelectionDialog
+        open={exerciseDialogOpen}
+        onClose={() => setExerciseDialogOpen(false)}
+        onExerciseSelect={handleExerciseSelected}
       />
     </Container>
   );

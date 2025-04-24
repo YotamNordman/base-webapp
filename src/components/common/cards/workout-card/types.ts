@@ -8,6 +8,24 @@ export interface Exercise {
   notes?: string;
   restTime?: number;
   duration?: number; // in seconds
+  category?: string;
+  muscleGroups?: string[];
+  difficultyLevel?: 'beginner' | 'intermediate' | 'advanced';
+}
+
+// ExerciseTemplate type for predefined exercises
+export interface ExerciseTemplate {
+  id: string;
+  name: string;
+  category: string;
+  muscleGroups: string[];
+  defaultSets?: number;
+  defaultReps?: number;
+  defaultWeight?: number;
+  instructions?: string;
+  difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 // WorkoutCard component props interface
@@ -25,4 +43,11 @@ export interface WorkoutCardProps {
   onComplete?: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+}
+
+// Exercise selection dialog props
+export interface ExerciseSelectionDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onExerciseSelect: (exercise: Exercise) => void;
 }

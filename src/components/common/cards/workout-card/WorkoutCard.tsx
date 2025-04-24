@@ -165,7 +165,11 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
             תרגילים ({exercises.length})
           </Typography>
           
-          <ExercisesList exercises={exercises} maxDisplayed={3} />
+          <ExercisesList 
+            exercises={exercises} 
+            maxDisplayed={3} 
+            compact={exercises.length > 3}
+          />
         </Box>
         
         <Box 
@@ -175,7 +179,9 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({
             alignItems: 'center',
             mt: 2,
             pt: 2,
-            borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+            borderRadius: 1,
+            bgcolor: alpha(theme.palette.background.default, 0.4)
           }}
         >
           {!completed && onComplete && (
