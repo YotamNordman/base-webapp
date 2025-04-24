@@ -18,6 +18,7 @@ import {
   LinearProgress,
   CircularProgress
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -36,6 +37,7 @@ const iconMap = {
 };
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   // Format the current date in Hebrew
   const currentDate = new Date();
@@ -195,7 +197,7 @@ const Dashboard: React.FC = () => {
                     exercises={workout.exercises}
                     date={workout.date}
                     clientName={workout.clientName}
-                    onClick={() => console.log(`Clicked workout ${workout.id}`)}
+                    onClick={() => navigate(`/workouts/${workout.id}`)}
                   />
                 </Box>
               ))
@@ -204,6 +206,7 @@ const Dashboard: React.FC = () => {
             <Button 
               variant="outlined" 
               color="primary" 
+              onClick={() => navigate('/workouts')}
               sx={{ 
                 borderRadius: 2, 
                 px: 3,
@@ -242,10 +245,12 @@ const Dashboard: React.FC = () => {
                   {upcomingClients.map((client, index) => (
                     <React.Fragment key={client.id}>
                       <ListItem
+                        onClick={() => navigate(`/clients/${client.id}`)}
                         sx={{ 
                           px: 0,
                           borderRadius: 1.5,
                           '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+                          cursor: 'pointer'
                         }}
                       >
                         <ListItemIcon sx={{ minWidth: 40 }}>
@@ -303,6 +308,7 @@ const Dashboard: React.FC = () => {
                 fullWidth
                 variant="outlined" 
                 color="primary" 
+                onClick={() => navigate('/clients')}
                 sx={{ 
                   borderRadius: 2, 
                   mt: 3,
