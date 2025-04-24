@@ -12,6 +12,135 @@ const getAuthHeader = (): HeadersInit => {
   };
 };
 
+// Mock data for development when backend is not available
+const mockCategories: ExerciseCategory[] = [
+  {
+    id: '1',
+    name: 'כוח עליון',
+    description: 'תרגילים לפלג גוף עליון',
+    targetMuscleGroups: 'חזה, כתפיים, טרפז, זרועות',
+  },
+  {
+    id: '2',
+    name: 'כוח תחתון',
+    description: 'תרגילים לפלג גוף תחתון',
+    targetMuscleGroups: 'ירכיים, ישבן, שוקיים',
+  },
+  {
+    id: '3',
+    name: 'ליבה',
+    description: 'תרגילים לשרירי הליבה',
+    targetMuscleGroups: 'בטן, גב תחתון',
+  },
+  {
+    id: '4',
+    name: 'קרדיו',
+    description: 'תרגילים אירוביים',
+    targetMuscleGroups: 'לב, ריאות, כל הגוף',
+  },
+  {
+    id: '5',
+    name: 'גמישות',
+    description: 'תרגילי מתיחה וגמישות',
+    targetMuscleGroups: 'כל הגוף',
+  }
+];
+
+const mockTemplates: ExerciseTemplate[] = [
+  {
+    id: '1',
+    name: 'לחיצת חזה עם משקולות',
+    description: 'תרגיל בסיסי ואפקטיבי לחיזוק שרירי החזה',
+    categoryId: '1',
+    targetMuscleGroups: 'חזה, כתפיים קדמיות, שלוש ראשי',
+    instructions: '1. שכב על הספסל\n2. החזק את המשקולות מעל החזה\n3. הורד לאט אל החזה\n4. דחוף בחזרה למעלה',
+    difficultyLevel: 'בינוני',
+    equipmentNeeded: 'משקולות, ספסל',
+    imageUrl: 'https://example.com/bench-press.jpg',
+    defaultSets: 3,
+    defaultReps: 10,
+    defaultWeight: 40
+  },
+  {
+    id: '2',
+    name: 'סקוואט',
+    description: 'תרגיל מורכב לחיזוק הרגליים',
+    categoryId: '2',
+    targetMuscleGroups: 'ירכיים, ישבן',
+    instructions: '1. עמוד עם רגליים ברוחב הכתפיים\n2. רד למטה כאילו אתה יושב על כיסא\n3. שמור על גב ישר\n4. חזור למעלה',
+    difficultyLevel: 'בינוני',
+    equipmentNeeded: 'משקל גוף, אופציה למשקולות',
+    imageUrl: 'https://example.com/squat.jpg',
+    defaultSets: 4,
+    defaultReps: 12,
+    defaultWeight: 60
+  },
+  {
+    id: '3',
+    name: 'מתח',
+    description: 'תרגיל למשיכת הגוף כלפי מעלה',
+    categoryId: '1',
+    targetMuscleGroups: 'גב, זרוע אחורית, כתפיים',
+    instructions: '1. תפוס את המוט\n2. משוך את עצמך למעלה\n3. הורד בשליטה',
+    difficultyLevel: 'מתקדם',
+    equipmentNeeded: 'מוט מתח',
+    imageUrl: 'https://example.com/pullup.jpg',
+    defaultSets: 3,
+    defaultReps: 8
+  },
+  {
+    id: '4',
+    name: 'פלאנק',
+    description: 'תרגיל סטטי לחיזוק הליבה',
+    categoryId: '3',
+    targetMuscleGroups: 'בטן, גב תחתון',
+    instructions: '1. תנוחת סמיכה על האמות\n2. שמור על גוף ישר\n3. החזק את התנוחה',
+    difficultyLevel: 'מתחיל',
+    equipmentNeeded: 'ללא ציוד',
+    imageUrl: 'https://example.com/plank.jpg',
+    defaultSets: 3,
+    defaultDuration: 60
+  },
+  {
+    id: '5',
+    name: 'ריצה קלה',
+    description: 'תרגיל קרדיו בסיסי',
+    categoryId: '4',
+    targetMuscleGroups: 'רגליים, לב, ריאות',
+    instructions: 'רוץ בקצב נוח למשך הזמן המוגדר',
+    difficultyLevel: 'משתנה',
+    equipmentNeeded: 'נעלי ריצה',
+    imageUrl: 'https://example.com/jogging.jpg',
+    defaultDuration: 1200
+  },
+  {
+    id: '6',
+    name: 'מתיחת רגליים',
+    description: 'תרגיל גמישות לרגליים',
+    categoryId: '5',
+    targetMuscleGroups: 'מיתרי הברך, קרסוליים',
+    instructions: '1. שב עם רגליים ישרות\n2. התכופף קדימה\n3. החזק למשך 30 שניות',
+    difficultyLevel: 'מתחיל',
+    equipmentNeeded: 'ללא ציוד',
+    imageUrl: 'https://example.com/leg-stretch.jpg',
+    defaultSets: 3,
+    defaultDuration: 30
+  }
+];
+
+// Helper functions for mock data
+const findMockCategoryById = (id: string): ExerciseCategory | undefined => {
+  return mockCategories.find(category => category.id === id);
+};
+
+const findMockTemplateById = (id: string): ExerciseTemplate | undefined => {
+  return mockTemplates.find(template => template.id === id);
+};
+
+const filterTemplatesByCategory = (categoryId: string): ExerciseTemplate[] => {
+  return mockTemplates.filter(template => template.categoryId === categoryId);
+};
+
 export const exerciseService = {
   // Category endpoints
   getCategories: async (): Promise<ExerciseCategory[]> => {
@@ -24,8 +153,8 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error fetching exercise categories:', error);
-      throw error;
+      console.warn('Using mock categories because API call failed:', error);
+      return [...mockCategories];
     }
   },
 
@@ -39,8 +168,12 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error(`Error fetching category ${id}:`, error);
-      throw error;
+      console.warn(`Using mock category because API call failed for category ${id}:`, error);
+      const mockCategory = findMockCategoryById(id);
+      if (mockCategory) {
+        return { ...mockCategory };
+      }
+      throw new Error(`Category with id ${id} not found in mock data`);
     }
   },
 
@@ -56,8 +189,13 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error creating exercise category:', error);
-      throw error;
+      console.warn('Using mock create because API call failed:', error);
+      const newCategory: ExerciseCategory = {
+        ...category,
+        id: `mock-category-${Date.now()}`
+      };
+      mockCategories.push(newCategory);
+      return newCategory;
     }
   },
 
@@ -73,8 +211,13 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error(`Error updating category ${category.id}:`, error);
-      throw error;
+      console.warn(`Using mock update because API call failed for category ${category.id}:`, error);
+      const index = mockCategories.findIndex(c => c.id === category.id);
+      if (index !== -1) {
+        mockCategories[index] = { ...category };
+        return { ...category };
+      }
+      throw new Error(`Category with id ${category.id} not found in mock data`);
     }
   },
 
@@ -88,8 +231,13 @@ export const exerciseService = {
         throw new Error(`Failed to delete category with id ${id}`);
       }
     } catch (error) {
-      console.error(`Error deleting category ${id}:`, error);
-      throw error;
+      console.warn(`Using mock delete because API call failed for category ${id}:`, error);
+      const index = mockCategories.findIndex(c => c.id === id);
+      if (index !== -1) {
+        mockCategories.splice(index, 1);
+        return;
+      }
+      throw new Error(`Category with id ${id} not found in mock data`);
     }
   },
 
@@ -108,8 +256,11 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error fetching exercise templates:', error);
-      throw error;
+      console.warn('Using mock templates because API call failed:', error);
+      if (categoryId) {
+        return filterTemplatesByCategory(categoryId);
+      }
+      return [...mockTemplates];
     }
   },
 
@@ -123,8 +274,12 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error(`Error fetching template ${id}:`, error);
-      throw error;
+      console.warn(`Using mock template because API call failed for template ${id}:`, error);
+      const mockTemplate = findMockTemplateById(id);
+      if (mockTemplate) {
+        return { ...mockTemplate };
+      }
+      throw new Error(`Template with id ${id} not found in mock data`);
     }
   },
 
@@ -140,8 +295,13 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error creating exercise template:', error);
-      throw error;
+      console.warn('Using mock create because API call failed:', error);
+      const newTemplate: ExerciseTemplate = {
+        ...template,
+        id: `mock-template-${Date.now()}`
+      };
+      mockTemplates.push(newTemplate);
+      return newTemplate;
     }
   },
 
@@ -157,8 +317,13 @@ export const exerciseService = {
       }
       return response.json();
     } catch (error) {
-      console.error(`Error updating template ${template.id}:`, error);
-      throw error;
+      console.warn(`Using mock update because API call failed for template ${template.id}:`, error);
+      const index = mockTemplates.findIndex(t => t.id === template.id);
+      if (index !== -1) {
+        mockTemplates[index] = { ...template };
+        return { ...template };
+      }
+      throw new Error(`Template with id ${template.id} not found in mock data`);
     }
   },
 
@@ -172,8 +337,13 @@ export const exerciseService = {
         throw new Error(`Failed to delete template with id ${id}`);
       }
     } catch (error) {
-      console.error(`Error deleting template ${id}:`, error);
-      throw error;
+      console.warn(`Using mock delete because API call failed for template ${id}:`, error);
+      const index = mockTemplates.findIndex(t => t.id === id);
+      if (index !== -1) {
+        mockTemplates.splice(index, 1);
+        return;
+      }
+      throw new Error(`Template with id ${id} not found in mock data`);
     }
   }
 };
