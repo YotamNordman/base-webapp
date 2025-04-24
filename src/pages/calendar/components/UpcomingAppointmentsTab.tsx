@@ -42,7 +42,6 @@ const UpcomingAppointmentsTab: React.FC<UpcomingAppointmentsTabProps> = ({
 
   // Group events by day (today, tomorrow, this week, later)
   const today = new Date();
-  const tomorrow = addDays(today, 1);
   const nextWeek = addDays(today, 7);
 
   const todayEvents = upcomingEvents.filter(event => isToday(new Date(event.start)));

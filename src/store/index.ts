@@ -5,6 +5,8 @@ import trainingBlocksReducer from './slices/trainingBlocksSlice';
 import calendarReducer from './slices/calendarSlice';
 import appointmentsReducer from './slices/appointmentsSlice';
 import clientsReducer from './slices/clientsSlice';
+import workoutLogReducer from './slices/workoutLogSlice';
+import methodologiesReducer from './slices/methodologiesSlice';
 
 // Configure the Redux store
 export const store = configureStore({
@@ -15,6 +17,8 @@ export const store = configureStore({
     calendar: calendarReducer,
     appointments: appointmentsReducer,
     clients: clientsReducer,
+    workoutLog: workoutLogReducer,
+    methodologies: methodologiesReducer,
   },
 });
 

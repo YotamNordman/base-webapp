@@ -5,7 +5,6 @@ import {
   ButtonGroup,
   TextField,
   Grid,
-  useTheme,
   Typography
 } from '@mui/material';
 import { addDays, addMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format } from 'date-fns';
@@ -21,7 +20,6 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   endDate,
   onDateRangeChange
 }) => {
-  const theme = useTheme();
 
   const formatDate = (date: Date): string => {
     return format(date, 'yyyy-MM-dd');

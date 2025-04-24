@@ -1,16 +1,13 @@
 import { ExerciseCategory, ExerciseTemplate } from '../types/exercise';
+import { getApiBaseUrl, getAuthHeader as configGetAuthHeader, isMockModeEnabled } from '../config';
 
-// Base API URL - would be configured from environment variables in a real app
-const API_BASE_URL = 'http://localhost:5015/api';
+// Get base API URL from configuration
+const API_BASE_URL = getApiBaseUrl();
+// Check if we should use mock data
+const USE_MOCK_DATA = isMockModeEnabled();
 
-// Helper function to get auth header
-const getAuthHeader = (): HeadersInit => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+// Use auth header from config
+const getAuthHeader = configGetAuthHeader;
 
 // Mock data for development when backend is not available
 const mockCategories: ExerciseCategory[] = [
@@ -144,6 +141,11 @@ const filterTemplatesByCategory = (categoryId: string): ExerciseTemplate[] => {
 export const exerciseService = {
   // Category endpoints
   getCategories: async (): Promise<ExerciseCategory[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return [...mockCategories];
+    }
+  
     try {
       const response = await fetch(`${API_BASE_URL}/exercises/categories`, {
         headers: getAuthHeader(),

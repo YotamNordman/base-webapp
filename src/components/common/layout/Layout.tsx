@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, CssBaseline, useTheme } from '@mui/material';
+import { Box, Container, CssBaseline } from '@mui/material';
 import Navigation from '../../common/navigation/Navigation';
 
 interface LayoutProps {
@@ -7,7 +7,6 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const theme = useTheme();
   const drawerWidth = 260;
 
   return (

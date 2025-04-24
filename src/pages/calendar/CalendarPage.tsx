@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../../utils';
 import { 
   Box, 
   Container, 
@@ -71,7 +72,7 @@ const CalendarPage: React.FC = () => {
           setLoginError('Failed to log in. Using mock data without authentication.');
         }
       } catch (err) {
-        console.error('Login error:', err);
+        logger.error('Login error:', err);
         setLoginError('Error during login. Using mock data without authentication.');
       } finally {
         setLoginLoading(false);

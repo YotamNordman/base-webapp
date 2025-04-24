@@ -24,6 +24,9 @@ export interface TrainingBlock {
   notes?: string;
   isTemplate: boolean;
   weeks: TrainingWeek[];
+  methodologyId?: string; // Reference to the applied training methodology
+  blockTypeId?: string; // Reference to the block type from the methodology
+  workoutTypeId?: string; // Default workout type for workouts created in this block
 }
 
 export interface TrainingBlockFilters {

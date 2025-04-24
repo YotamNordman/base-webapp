@@ -5,8 +5,6 @@ import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { 
   BrowserRouter as Router, 
-  useNavigate, 
-  useLocation, 
   useRoutes, 
   RouteObject 
 } from 'react-router-dom';
@@ -19,7 +17,6 @@ import Dashboard from './pages/dashboard';
 import Login from './pages/auth/Login';
 import NotFound from './pages/error/NotFound';
 import { 
-  Clients, 
   ClientDetails, 
   ClientCreatePage, 
   ClientEditPage,
@@ -28,6 +25,7 @@ import {
 import WorkoutListPage from './pages/workouts/WorkoutListPage';
 import WorkoutDetailPage from './pages/workouts/WorkoutDetailPage';
 import WorkoutFormPage from './pages/workouts/WorkoutFormPage';
+import RIRTrackingDemo from './pages/workouts/RIRTrackingDemo';
 import { CalendarPage } from './pages/calendar';
 import { 
   ExerciseListPage, 
@@ -78,6 +76,10 @@ const appRoutes: RouteObject[] = [
           {
             path: ':id/edit',
             element: <WorkoutFormPage />
+          },
+          {
+            path: 'rir-demo',
+            element: <RIRTrackingDemo />
           }
         ]
       },
@@ -179,9 +181,7 @@ const appRoutes: RouteObject[] = [
 
 // The app with routing
 const AppContent = () => {
-  const { isAuthenticated, loading } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { loading } = useAuth();
   const routeElement = useRoutes(appRoutes);
   
   // Force authentication with a mock login

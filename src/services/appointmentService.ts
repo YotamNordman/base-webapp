@@ -1,8 +1,11 @@
 import { Appointment, AppointmentStatus, AppointmentType, CalendarEvent } from '../types/appointment';
 import { devLogin } from '../utils/auth';
+import { getApiBaseUrl, getAuthHeader as configGetAuthHeader, isMockModeEnabled } from '../config';
 
-// Base API URL - would be configured from environment variables in a real app
-const API_BASE_URL = 'http://localhost:5015/api';
+// Get base API URL from configuration
+const API_BASE_URL = getApiBaseUrl();
+// Check if we should use mock data
+const USE_MOCK_DATA = isMockModeEnabled();
 
 // Helper function to get auth header
 const getAuthHeader = async (): Promise<HeadersInit> => {
@@ -176,28 +179,54 @@ const filterAppointmentsByDateRange = (start: Date, end: Date): Appointment[] =>
 
 export const appointmentService = {
   getAppointments: async (): Promise<Appointment[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return [...mockAppointments];
+    }
+
     try {
       const headers = await getAuthHeader();
       const response = await fetch(`${API_BASE_URL}/appointments`, { headers });
       return handleApiError(response);
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      throw error;
+      // Return mock data on error
+      return [...mockAppointments];
     }
   },
   
   getAppointmentById: async (id: string): Promise<Appointment> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      const appointment = findMockAppointmentById(id);
+      if (appointment) {
+        return { ...appointment };
+      }
+      throw new Error(`Appointment with id ${id} not found in mock data`);
+    }
+
     try {
       const headers = await getAuthHeader();
       const response = await fetch(`${API_BASE_URL}/appointments/${id}`, { headers });
       return handleApiError(response);
     } catch (error) {
       console.error(`Error fetching appointment ${id}:`, error);
+      // Try to find appointment in mock data
+      const appointment = findMockAppointmentById(id);
+      if (appointment) {
+        return { ...appointment };
+      }
       throw error;
     }
   },
   
   getCalendarEvents: async (start: Date, end: Date): Promise<CalendarEvent[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      const filteredAppointments = filterAppointmentsByDateRange(start, end);
+      return mapAppointmentsToCalendarEvents(filteredAppointments);
+    }
+
     try {
       const startParam = start.toISOString();
       const endParam = end.toISOString();
@@ -213,35 +242,57 @@ export const appointmentService = {
       console.error('Error fetching calendar events:', error);
       // If API fails, we still need to return calendar events, so convert appointments to events format
       // This ensures the calendar continues to function even during API issues
-      // Use direct reference to appointmentService instead of 'this'
-      const appointments = await appointmentService.getAppointments();
-      return mapAppointmentsToCalendarEvents(appointments);
+      // Filter appointments by date range
+      const filteredAppointments = filterAppointmentsByDateRange(start, end);
+      return mapAppointmentsToCalendarEvents(filteredAppointments);
     }
   },
   
   getClientAppointments: async (clientId: string): Promise<Appointment[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return filterAppointmentsByClientId(clientId);
+    }
+
     try {
       const headers = await getAuthHeader();
       const response = await fetch(`${API_BASE_URL}/appointments/client/${clientId}`, { headers });
       return handleApiError(response);
     } catch (error) {
       console.error(`Error fetching appointments for client ${clientId}:`, error);
-      throw error;
+      // Return filtered mock data on error
+      return filterAppointmentsByClientId(clientId);
     }
   },
   
   getUpcomingAppointments: async (): Promise<Appointment[]> => {
+    // If mock mode is enabled, return mock data directly
+    if (USE_MOCK_DATA) {
+      return getUpcomingMockAppointments();
+    }
+
     try {
       const headers = await getAuthHeader();
       const response = await fetch(`${API_BASE_URL}/appointments/upcoming`, { headers });
       return handleApiError(response);
     } catch (error) {
       console.error('Error fetching upcoming appointments:', error);
-      throw error;
+      // Return mock upcoming appointments on error
+      return getUpcomingMockAppointments();
     }
   },
   
   createAppointment: async (appointment: Omit<Appointment, 'id'>): Promise<Appointment> => {
+    // If mock mode is enabled, create in mock data
+    if (USE_MOCK_DATA) {
+      const newAppointment: Appointment = {
+        ...appointment,
+        id: `mock-appointment-${Date.now()}`
+      };
+      mockAppointments.push(newAppointment);
+      return newAppointment;
+    }
+
     try {
       const headers = await getAuthHeader();
       const response = await fetch(`${API_BASE_URL}/appointments`, {
@@ -253,7 +304,13 @@ export const appointmentService = {
       return handleApiError(response);
     } catch (error) {
       console.error('Error creating appointment:', error);
-      throw error;
+      // Create in mock data on error
+      const newAppointment: Appointment = {
+        ...appointment,
+        id: `mock-appointment-${Date.now()}`
+      };
+      mockAppointments.push(newAppointment);
+      return newAppointment;
     }
   },
   

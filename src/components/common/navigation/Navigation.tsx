@@ -149,6 +149,7 @@ const Navigation: React.FC = () => {
   const menuItems = [
     { text: 'לוח בקרה', icon: <DashboardIcon />, path: '/' },
     { text: 'אימונים', icon: <FitnessCenterIcon />, path: '/workouts' },
+    { text: 'מעקב RIR', icon: <FitnessCenterIcon />, path: '/workouts/rir-demo' },
     { text: 'מתאמנים', icon: <PeopleIcon />, path: '/clients' },
     { text: 'יומן', icon: <CalendarTodayIcon />, path: '/calendar' },
     { text: 'דוחות', icon: <BarChartIcon />, path: '/reports' },

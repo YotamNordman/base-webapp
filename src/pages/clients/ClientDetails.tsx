@@ -245,7 +245,7 @@ const ClientDetails: React.FC = () => {
                 
                 <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
                   <AccessTimeIcon sx={{ fontSize: 20, mr: 0.5 }} />
-                  מתאמן מאז: {formatDate(client.startDate)}
+                  מתאמן מאז: {client.membershipDetails ? formatDate(client.membershipDetails.startDate) : 'N/A'}
                 </Typography>
               </Box>
             </Grid>
@@ -353,7 +353,9 @@ const ClientDetails: React.FC = () => {
                     איש קשר לשעת חירום
                   </Typography>
                   <Typography variant="body1">
-                    {client.emergencyContact || 'לא הוגדר'}
+                    {client.emergencyContact 
+                      ? `${client.emergencyContact.name} (${client.emergencyContact.phone})` 
+                      : 'לא הוגדר'}
                   </Typography>
                 </Box>
               </Grid>
@@ -373,7 +375,9 @@ const ClientDetails: React.FC = () => {
                     מידע רפואי
                   </Typography>
                   <Typography variant="body1">
-                    {client.healthInfo || 'אין מידע רפואי רשום'}
+                    {client.healthInfo 
+                      ? `גובה: ${client.healthInfo.height}cm, משקל: ${client.healthInfo.weight}kg${client.healthInfo.medicalConditions ? `, מצבים רפואיים: ${client.healthInfo.medicalConditions}` : ''}` 
+                      : 'אין מידע רפואי רשום'}
                   </Typography>
                 </Paper>
               </Grid>

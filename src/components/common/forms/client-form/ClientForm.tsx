@@ -38,7 +38,10 @@ const ClientForm: React.FC<ClientFormProps> = ({
     email: '',
     phone: '',
     status: 'active',
-    startDate: new Date().toISOString().split('T')[0],
+    membershipDetails: {
+      startDate: new Date().toISOString().split('T')[0],
+      type: 'regular'
+    },
     ...initialData
   });
   
@@ -81,7 +84,7 @@ const ClientForm: React.FC<ClientFormProps> = ({
     if (!formData.lastName) newErrors.lastName = 'שם משפחה הוא שדה חובה';
     if (!formData.email) newErrors.email = 'אימייל הוא שדה חובה';
     if (!formData.phone) newErrors.phone = 'טלפון הוא שדה חובה';
-    if (!formData.startDate) newErrors.startDate = 'תאריך התחלה הוא שדה חובה';
+    if (!formData.membershipDetails?.startDate) newErrors.startDate = 'תאריך התחלה הוא שדה חובה';
     
     // Email validation
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
@@ -226,12 +229,21 @@ const ClientForm: React.FC<ClientFormProps> = ({
             <TextField
               required
               fullWidth
-              id="startDate"
-              name="startDate"
+              id="membershipStartDate"
+              name="membershipStartDate"
               label="תאריך התחלה"
               type="date"
-              value={formData.startDate || ''}
-              onChange={handleDateInputChange}
+              value={formData.membershipDetails?.startDate || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  membershipDetails: {
+                    ...(prev.membershipDetails || { type: 'regular' }),
+                    startDate: value
+                  }
+                }));
+              }}
               error={!!errors.startDate}
               helperText={errors.startDate || 'DD/MM/YYYY'}
               InputLabelProps={{ shrink: true }}
@@ -275,29 +287,107 @@ const ClientForm: React.FC<ClientFormProps> = ({
         </Typography>
         
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              id="emergencyContact"
-              name="emergencyContact"
-              label="איש קשר לשעת חירום"
-              placeholder="שם ומספר טלפון"
-              value={formData.emergencyContact || ''}
-              onChange={handleChange}
+              id="emergencyContactName"
+              name="emergencyContactName"
+              label="שם איש קשר לשעת חירום"
+              placeholder="שם איש קשר"
+              value={formData.emergencyContact?.name || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  emergencyContact: {
+                    ...(prev.emergencyContact || { phone: '', relation: '' }),
+                    name: value
+                  }
+                }));
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="emergencyContactPhone"
+              name="emergencyContactPhone"
+              label="טלפון איש קשר לשעת חירום"
+              placeholder="טלפון איש קשר"
+              value={formData.emergencyContact?.phone || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  emergencyContact: {
+                    ...(prev.emergencyContact || { name: '', relation: '' }),
+                    phone: value
+                  }
+                }));
+              }}
             />
           </Grid>
           
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="healthInfoHeight"
+              name="healthInfoHeight"
+              label="גובה (ס״מ)"
+              type="number"
+              value={formData.healthInfo?.height || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  healthInfo: {
+                    ...(prev.healthInfo || {}),
+                    height: value ? Number(value) : undefined
+                  }
+                }));
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="healthInfoWeight"
+              name="healthInfoWeight"
+              label="משקל (ק״ג)"
+              type="number"
+              value={formData.healthInfo?.weight || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  healthInfo: {
+                    ...(prev.healthInfo || {}),
+                    weight: value ? Number(value) : undefined
+                  }
+                }));
+              }}
+            />
+          </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
-              id="healthInfo"
-              name="healthInfo"
+              id="healthInfoMedical"
+              name="healthInfoMedical"
               label="מידע רפואי"
               multiline
               rows={3}
               placeholder="מידע על בעיות רפואיות, מגבלות, אלרגיות וכו'"
-              value={formData.healthInfo || ''}
-              onChange={handleChange}
+              value={formData.healthInfo?.medicalConditions || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(prev => ({
+                  ...prev,
+                  healthInfo: {
+                    ...(prev.healthInfo || {}),
+                    medicalConditions: value
+                  }
+                }));
+              }}
             />
           </Grid>
           
