@@ -139,6 +139,149 @@ const filterTemplatesByCategory = (categoryId: string): ExerciseTemplate[] => {
 };
 
 export const exerciseService = {
+  // Upload CSV file to backend
+  uploadExerciseCsv: async (formData: FormData): Promise<{ categories: ExerciseCategory[], templates: ExerciseTemplate[] }> => {
+    // If mock mode is enabled, use the mock implementation
+    if (USE_MOCK_DATA) {
+      try {
+        // Get the file from the form data
+        const file = formData.get('file') as File;
+        if (!file) {
+          throw new Error('No file found in form data');
+        }
+        
+        // Read the file content
+        const text = await file.text();
+        
+        // Split the CSV into lines
+        const lines = text.split('\n');
+        
+        // Initialize data structures for categories and templates
+        const categories: ExerciseCategory[] = [];
+        const templates: ExerciseTemplate[] = [];
+        
+        // Get the next IDs for categories and templates
+        let nextCategoryId = mockCategories.length > 0 
+          ? Math.max(...mockCategories.map(c => parseInt(c.id))) + 1 
+          : 1;
+        let nextTemplateId = mockTemplates.length > 0 
+          ? Math.max(...mockTemplates.map(t => parseInt(t.id))) + 1 
+          : 1;
+        
+        // Track category IDs by name
+        const categoryMap: Record<string, string> = {};
+        
+        // Extract categories from row 2 (index 1)
+        if (lines.length > 1) {
+          const categoryRow = lines[1];
+          const categoryColumns = categoryRow.split(',');
+          
+          // Process each category (they appear every 3 columns starting from index 1)
+          for (let i = 1; i < categoryColumns.length; i += 3) {
+            const categoryName = categoryColumns[i]?.trim();
+            
+            if (categoryName && categoryName.length > 0) {
+              // Create unique ID for the category
+              const categoryId = `${nextCategoryId++}`;
+              categoryMap[categoryName] = categoryId;
+              
+              // Create category object
+              const category: ExerciseCategory = {
+                id: categoryId,
+                name: categoryName,
+                description: `תרגילים לקבוצת שרירים: ${categoryName}`,
+                targetMuscleGroups: categoryName
+              };
+              
+              categories.push(category);
+            }
+          }
+        }
+        
+        // Process exercises from row 4 (index 3) onward
+        for (let i = 3; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line.trim()) continue;
+          
+          const columns = line.split(',');
+          
+          // Process each exercise entry
+          for (let j = 1; j < columns.length; j += 3) {
+            const exerciseName = columns[j]?.trim();
+            const videoIndicator = columns[j + 1]?.trim();
+            
+            if (exerciseName && exerciseName.length > 0) {
+              // Determine which category this exercise belongs to
+              const categoryIndex = Math.floor(j / 3);
+              
+              if (categoryIndex < categories.length) {
+                const category = categories[categoryIndex];
+                
+                // Create template
+                const template: ExerciseTemplate = {
+                  id: `${nextTemplateId++}`,
+                  name: exerciseName,
+                  description: `תרגיל ${exerciseName} לקבוצת שרירים: ${category.name}`,
+                  categoryId: category.id,
+                  targetMuscleGroups: category.name,
+                  instructions: `ביצוע תרגיל ${exerciseName}`,
+                  difficultyLevel: 'בינוני', // Default values
+                  equipmentNeeded: 'משקולות',
+                  defaultSets: 3,
+                  defaultReps: 10
+                };
+                
+                // Add video URL if indicator present
+                if (videoIndicator === '📹') {
+                  template.videoUrl = '#'; // Placeholder
+                }
+                
+                templates.push(template);
+              }
+            }
+          }
+        }
+        
+        // Save to mock data
+        mockCategories.push(...categories);
+        mockTemplates.push(...templates);
+        
+        return { categories, templates };
+      } catch (error) {
+        console.error('Failed to upload exercises CSV:', error);
+        throw new Error('Failed to upload exercises CSV');
+      }
+    } else {
+      // Use the real API
+      try {
+        // Get auth header and extract only the Authorization token if present
+        const authHeader = getAuthHeader();
+        const headersWithoutContentType: HeadersInit = {};
+        
+        // Extract Authorization header if present
+        if ('Authorization' in authHeader && typeof authHeader.Authorization === 'string') {
+          headersWithoutContentType.Authorization = authHeader.Authorization;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/exercises/import-csv`, {
+          method: 'POST',
+          headers: headersWithoutContentType,
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload CSV file');
+        }
+        
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Failed to upload exercises CSV:', error);
+        throw new Error('Failed to upload exercises CSV');
+      }
+    }
+  },
+  
   // Category endpoints
   getCategories: async (): Promise<ExerciseCategory[]> => {
     // If mock mode is enabled, return mock data directly

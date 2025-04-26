@@ -11,6 +11,7 @@ export interface Exercise {
   category?: string;
   muscleGroups?: string[];
   difficultyLevel?: 'beginner' | 'intermediate' | 'advanced';
+  videoUrl?: string;
 }
 
 // ExerciseTemplate type for predefined exercises
