@@ -114,33 +114,33 @@ const TrainingBlockDetailPage: React.FC = () => {
     }
   };
   
-  const handleEditWeek = (weekId: string) => {
+  const handleEditWeek = (weekId: string | number) => {
     if (id) {
       navigate(`/training/blocks/${id}/weeks/${weekId}/edit`);
     }
   };
   
-  const handleDeleteWeek = (weekId: string) => {
+  const handleDeleteWeek = (weekId: string | number) => {
     // This would be implemented with a proper API call in a real app
     alert(`Deleting week ${weekId}. This would be implemented with a proper API call in a real app.`);
   };
   
-  const handleAddWorkout = (weekId: string) => {
+  const handleAddWorkout = (weekId: string | number) => {
     if (id) {
       navigate(`/training/blocks/${id}/weeks/${weekId}/workouts/new`);
     }
   };
   
-  const handleEditWorkout = (workoutId: string) => {
+  const handleEditWorkout = (workoutId: string | number) => {
     navigate(`/workouts/${workoutId}/edit`);
   };
   
-  const handleDeleteWorkout = (workoutId: string) => {
+  const handleDeleteWorkout = (workoutId: string | number) => {
     // This would be implemented with a proper API call in a real app
     alert(`Deleting workout ${workoutId}. This would be implemented with a proper API call in a real app.`);
   };
   
-  const handleViewWorkout = (workoutId: string) => {
+  const handleViewWorkout = (workoutId: string | number) => {
     navigate(`/workouts/${workoutId}`);
   };
   

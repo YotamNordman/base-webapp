@@ -191,7 +191,7 @@ export const workoutService = {
     if (USE_MOCK_DATA) {
       const newWorkout: Workout = {
         ...workout,
-        id: `mock-${Date.now()}`,
+        id: Number(`${Date.now()}`), // Convert to number
         createdAt: new Date().toISOString(),
       };
       mockWorkouts.push(newWorkout);
@@ -213,7 +213,7 @@ export const workoutService = {
       // Create a new workout with mock data
       const newWorkout: Workout = {
         ...workout,
-        id: `mock-${Date.now()}`,
+        id: Number(`${Date.now()}`), // Convert to number
         createdAt: new Date().toISOString(),
       };
       mockWorkouts.push(newWorkout);
@@ -257,7 +257,7 @@ export const workoutService = {
   deleteWorkout: async (id: string): Promise<void> => {
     // If mock mode is enabled, delete from mock data
     if (USE_MOCK_DATA) {
-      const index = mockWorkouts.findIndex(w => w.id === id);
+      const index = mockWorkouts.findIndex(w => String(w.id) === id);
       if (index !== -1) {
         mockWorkouts.splice(index, 1);
         return;
@@ -276,7 +276,7 @@ export const workoutService = {
     } catch (error) {
       console.warn(`Using mock delete because API call failed for workout ${id}:`, error);
       // Remove the workout from mock data
-      const index = mockWorkouts.findIndex(w => w.id === id);
+      const index = mockWorkouts.findIndex(w => String(w.id) === id);
       if (index !== -1) {
         mockWorkouts.splice(index, 1);
         return;

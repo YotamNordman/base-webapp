@@ -44,13 +44,13 @@ import {
   selectWorkoutError,
   clearSelectedWorkout
 } from '../../store/slices/workoutsSlice';
-import { Exercise } from '../../components/common/cards/workout-card/types';
+import { Exercise } from '../../types/workout';
 import { AppDispatch } from '../../store';
 import { Workout } from '../../types/workout';
 import { ExerciseSelectionDialog } from '../../components/widgets/exercise-selector';
 
 // Default empty exercise template
-const emptyExercise: Exercise = {
+const emptyExercise = {
   name: '',
   sets: 3,
   reps: 10,
@@ -60,11 +60,11 @@ const emptyExercise: Exercise = {
 
 // Default client options for dropdown (should come from API in a real implementation)
 const clientOptions = [
-  { id: '1', name: 'John Doe' },
-  { id: '2', name: 'Jane Smith' },
-  { id: '3', name: 'Michael Johnson' },
-  { id: '4', name: 'Emily Williams' },
-  { id: '5', name: 'David Brown' }
+  { id: 1, name: 'John Doe' },
+  { id: 2, name: 'Jane Smith' },
+  { id: 3, name: 'Michael Johnson' },
+  { id: 4, name: 'Emily Williams' },
+  { id: 5, name: 'David Brown' }
 ];
 
 const WorkoutFormPage: React.FC = () => {
@@ -82,7 +82,7 @@ const WorkoutFormPage: React.FC = () => {
     title: '',
     description: '',
     coachId: '1', // Default coach ID (should be the logged in user in real app)
-    clientId: '',
+    clientId: 0,
     clientName: '',
     scheduledFor: new Date().toISOString().slice(0, 16), // Format: YYYY-MM-DDThh:mm
     completed: false,
@@ -117,7 +117,7 @@ const WorkoutFormPage: React.FC = () => {
         coachId: existingWorkout.coachId,
         clientId: existingWorkout.clientId,
         clientName: existingWorkout.clientName,
-        scheduledFor: new Date(existingWorkout.scheduledFor).toISOString().slice(0, 16),
+        scheduledFor: existingWorkout.scheduledFor ? new Date(existingWorkout.scheduledFor).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
         completed: existingWorkout.completed,
         exercises: existingWorkout.exercises.map(ex => ({ ...ex })),
         duration: existingWorkout.duration
@@ -128,7 +128,7 @@ const WorkoutFormPage: React.FC = () => {
   // Update client name when client ID changes
   useEffect(() => {
     if (formData.clientId) {
-      const selectedClient = clientOptions.find(client => client.id === formData.clientId);
+      const selectedClient = clientOptions.find(client => Number(client.id) === formData.clientId);
       if (selectedClient) {
         setFormData(prev => ({
           ...prev,
@@ -152,7 +152,7 @@ const WorkoutFormPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'clientId' ? Number(value) : value
     }));
   };
   
@@ -184,7 +184,7 @@ const WorkoutFormPage: React.FC = () => {
   };
   
   // Handle exercise selected from exercise dialog
-  const handleExerciseSelected = (exercise: Exercise) => {
+  const handleExerciseSelected = (exercise: any) => {
     if (selectedExerciseIndex !== null) {
       // Update existing exercise
       setFormData(prev => {
@@ -272,7 +272,7 @@ const WorkoutFormPage: React.FC = () => {
       if (isEditMode && id) {
         await dispatch(updateWorkout({ 
           ...formData, 
-          id, 
+          id: Number(id), 
           createdAt: existingWorkout?.createdAt || new Date().toISOString() 
         })).unwrap();
         setSnackbarMessage('האימון עודכן בהצלחה');
@@ -381,12 +381,12 @@ const WorkoutFormPage: React.FC = () => {
               <Select
                 labelId="client-label"
                 name="clientId"
-                value={formData.clientId}
+                value={formData.clientId.toString()}
                 label="מתאמן"
                 onChange={handleSelectChange}
               >
                 {clientOptions.map(client => (
-                  <MenuItem key={client.id} value={client.id}>
+                  <MenuItem key={client.id} value={client.id.toString()}>
                     {client.name}
                   </MenuItem>
                 ))}

@@ -71,7 +71,7 @@ const Clients: React.FC = () => {
     dispatch(setStatusFilter(event.target.value));
   };
   
-  const handleClientClick = (id: string) => {
+  const handleClientClick = (id: string | number) => {
     navigate(`/clients/${id}`);
   };
   
@@ -79,21 +79,21 @@ const Clients: React.FC = () => {
     navigate('/clients/new');
   };
   
-  const handleEditClient = (id: string) => {
+  const handleEditClient = (id: string | number) => {
     navigate(`/clients/${id}/edit`);
   };
   
-  const handleDeleteClient = (id: string) => {
+  const handleDeleteClient = (id: string | number) => {
     if (window.confirm('האם אתה בטוח שברצונך למחוק מתאמן זה?')) {
-      dispatch(deleteClient(id));
+      dispatch(deleteClient(id.toString()));
     }
   };
   
-  const handleAddWorkout = (id: string) => {
+  const handleAddWorkout = (id: string | number) => {
     navigate(`/workouts/new?clientId=${id}`);
   };
   
-  const handleScheduleAppointment = (id: string) => {
+  const handleScheduleAppointment = (id: string | number) => {
     navigate(`/calendar?clientId=${id}`);
   };
   

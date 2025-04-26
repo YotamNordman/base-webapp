@@ -88,22 +88,22 @@ const WorkoutListPage: React.FC = () => {
     navigate('/workouts/new');
   };
   
-  const handleWorkoutClick = (id: string) => {
+  const handleWorkoutClick = (id: string | number) => {
     navigate(`/workouts/${id}`);
   };
   
-  const handleEditWorkout = (id: string) => {
+  const handleEditWorkout = (id: string | number) => {
     navigate(`/workouts/${id}/edit`);
   };
   
-  const handleDeleteWorkout = (id: string) => {
+  const handleDeleteWorkout = (id: string | number) => {
     if (window.confirm('האם אתה בטוח שברצונך למחוק אימון זה?')) {
-      dispatch(deleteWorkout(id));
+      dispatch(deleteWorkout(id.toString()));
     }
   };
   
-  const handleCompleteWorkout = (id: string) => {
-    dispatch(completeWorkout(id));
+  const handleCompleteWorkout = (id: string | number) => {
+    dispatch(completeWorkout(id.toString()));
   };
   
   const handleStatusFilterChange = (event: SelectChangeEvent<string>) => {
@@ -136,7 +136,7 @@ const WorkoutListPage: React.FC = () => {
           אימונים
         </Typography>
         
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={2}>
           <IconButton 
             onClick={handleRefresh} 
             sx={{ mr: 1 }}
@@ -146,9 +146,16 @@ const WorkoutListPage: React.FC = () => {
           </IconButton>
           
           <Button 
+            variant="outlined"
+            onClick={() => navigate('/workouts/program')}
+          >
+            מתכנן תוכניות אימון
+          </Button>
+          
+          <Button 
             variant="contained" 
             startIcon={<AddIcon />}
-            onClick={handleAddWorkout}
+            onClick={() => navigate('/workouts/new')}
           >
             אימון חדש
           </Button>
@@ -235,7 +242,7 @@ const WorkoutListPage: React.FC = () => {
             <WorkoutCard 
               id={workout.id}
               title={workout.title}
-              description={workout.description}
+              description={workout.description || ''}
               duration={workout.duration}
               exercises={workout.exercises}
               scheduledFor={workout.scheduledFor}

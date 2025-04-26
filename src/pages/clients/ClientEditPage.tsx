@@ -46,7 +46,7 @@ const ClientEditPage: React.FC = () => {
     if (!id) return;
     
     try {
-      const clientWithId = { ...data, id };
+      const clientWithId = { ...data, id: Number(id) };
       const resultAction = await dispatch(updateClient(clientWithId));
       if (updateClient.fulfilled.match(resultAction)) {
         // Navigate back to the client details page

@@ -159,8 +159,8 @@ const workoutsSlice = createSlice({
       })
       .addCase(deleteWorkout.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.workouts = state.workouts.filter(workout => workout.id !== action.payload);
-        if (state.selectedWorkout?.id === action.payload) {
+        state.workouts = state.workouts.filter(workout => String(workout.id) !== action.payload);
+        if (state.selectedWorkout && String(state.selectedWorkout.id) === action.payload) {
           state.selectedWorkout = null;
         }
       })
@@ -204,7 +204,7 @@ export default workoutsSlice.reducer;
 // Selectors
 export const selectAllWorkouts = (state: { workouts: WorkoutsState }) => state.workouts.workouts;
 export const selectWorkoutById = (state: { workouts: WorkoutsState }, workoutId: string) => 
-  state.workouts.workouts.find(workout => workout.id === workoutId);
+  state.workouts.workouts.find(workout => String(workout.id) === workoutId);
 export const selectSelectedWorkout = (state: { workouts: WorkoutsState }) => state.workouts.selectedWorkout;
 export const selectWorkoutStatus = (state: { workouts: WorkoutsState }) => state.workouts.status;
 export const selectWorkoutError = (state: { workouts: WorkoutsState }) => state.workouts.error;
@@ -222,13 +222,13 @@ export const selectFilteredWorkouts = (state: { workouts: WorkoutsState }) => {
     }
     
     // Filter by client
-    if (clientFilter && workout.clientId !== clientFilter) {
+    if (clientFilter && String(workout.clientId) !== clientFilter) {
       return false;
     }
     
     // Filter by date range
     if (dateFilter.startDate || dateFilter.endDate) {
-      const workoutDate = new Date(workout.scheduledFor).getTime();
+      const workoutDate = workout.scheduledFor ? new Date(workout.scheduledFor).getTime() : 0;
       if (dateFilter.startDate) {
         const startDate = new Date(dateFilter.startDate).getTime();
         if (workoutDate < startDate) return false;
@@ -244,7 +244,7 @@ export const selectFilteredWorkouts = (state: { workouts: WorkoutsState }) => {
       const query = searchQuery.toLowerCase();
       return (
         workout.title.toLowerCase().includes(query) ||
-        workout.description.toLowerCase().includes(query) ||
+        (workout.description ? workout.description.toLowerCase().includes(query) : false) ||
         (workout.clientName && workout.clientName.toLowerCase().includes(query))
       );
     }

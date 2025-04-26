@@ -25,11 +25,11 @@ import { Client } from '../../../../types/client';
 
 interface ClientCardProps {
   client: Client;
-  onClick?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onAddWorkout?: (id: string) => void;
-  onSchedule?: (id: string) => void;
+  onClick?: (id: string | number) => void;
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
+  onAddWorkout?: (id: string | number) => void;
+  onSchedule?: (id: string | number) => void;
 }
 
 const ClientCard: React.FC<ClientCardProps> = ({

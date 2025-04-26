@@ -1,52 +1,124 @@
 import { Exercise } from '../components/common/cards/workout-card/types';
 import { EnhancedExercise, LogbookEntry } from './exercise';
 
-// Legacy workout interface for backward compatibility
+// Make sure Exercise type can work with WorkoutExercise
+export type { Exercise };
+
+// Exercise Set with detailed information
+export interface ExerciseSet {
+  id?: number;
+  setNumber: number;
+  plannedReps: number;
+  plannedWeight?: number;
+  plannedRir?: number;
+  actualReps?: number;
+  actualWeight?: number;
+  actualRir?: number;
+  completed: boolean;
+}
+
+// Exercise in a workout
+export interface WorkoutExercise {
+  id?: string | number;
+  name: string;
+  sets?: number; // For backwards compatibility
+  reps?: number; // For backwards compatibility
+  weight?: number; // For backwards compatibility
+  restTime?: number;
+  notes?: string;
+  duration?: number;
+  setDetails?: ExerciseSet[]; // Detailed information about sets
+}
+
+// Standard Workout interface
 export interface Workout {
+  id: string | number; // Allow both string and number for compatibility
+  title: string;
+  description?: string;
+  coachId?: string;
+  clientId: string | number; // Allow both string and number for compatibility
+  clientName?: string;
+  createdAt?: string;
+  scheduledFor?: string;
+  completed: boolean;
+  exercises: WorkoutExercise[];
+  duration?: number;
+}
+
+// Legacy workout interface for backward compatibility
+export interface LegacyWorkout {
   id: string;
   title: string;
   description: string;
   coachId: string;
   clientId: string;
-  clientName?: string; // For display purposes
+  clientName?: string;
   createdAt: string;
   scheduledFor: string;
   completed: boolean;
   exercises: Exercise[];
-  duration?: number; // In minutes
+  duration?: number;
 }
 
 // Enhanced workout interface based on trainer's methodology
 export interface EnhancedWorkout {
-  id: number;
+  id: string | number;
   title: string;
   description?: string;
   coachId: string;
-  clientId: string;
-  clientName?: string; // For display purposes
-  createdAt: string; // ISO 8601 format
-  scheduledFor: string; // ISO 8601 format
-  completedAt?: string; // ISO 8601 format
+  clientId: string | number; // Allow both string and number for compatibility
+  clientName?: string;
+  createdAt: string;
+  scheduledFor: string;
+  completedAt?: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   exercises: EnhancedExercise[];
   notes?: string;
-  duration: number; // in minutes
+  duration: number;
   
   // Enhanced fields for trainer's methodology
   workoutType: 'strength' | 'cardio' | 'recovery' | 'mixed';
-  workoutNumber: number; // e.g., "Workout 1" in the week
-  weekNumber: number; // Associated week in the training block
-  bodyFocus: string[]; // Primary body areas trained (e.g., ["chest", "triceps"])
-  totalVolume?: number; // Calculated from all exercises
-  previousWorkoutId?: number; // Reference to the same workout from previous week
+  workoutNumber: number;
+  weekNumber: number;
+  bodyFocus: string[];
+  totalVolume?: number;
+  previousWorkoutId?: number;
   logbookEntries?: LogbookEntry[];
   
   // Methodology-specific fields
-  methodologyId?: string; // Reference to the applied training methodology
-  methodologyWorkoutTypeId?: string; // Reference to specific workout type from methodology
-  trainingStyleId?: string; // Reference to training style from methodology
-  targetRir?: number; // Target RIR for this workout based on methodology
-  rirRangeId?: string; // Reference to RIR range from methodology
+  methodologyId?: string;
+  methodologyWorkoutTypeId?: string;
+  trainingStyleId?: string;
+  targetRir?: number;
+  rirRangeId?: string;
+}
+
+// Training Week entity
+export interface TrainingWeek {
+  id: string | number;
+  title: string;
+  description?: string;
+  blockId: string | number;
+  weekNumber: number;
+  notes?: string;
+  workouts?: Workout[];
+}
+
+// Training Block entity
+export interface TrainingBlock {
+  id: string | number;
+  title: string;
+  description?: string;
+  coachId?: string;
+  clientId?: string | number;
+  clientName?: string;
+  createdAt?: string;
+  startDate?: string;
+  endDate?: string;
+  goal?: string;
+  notes?: string;
+  isTemplate: boolean;
+  weeks?: TrainingWeek[];
 }
 
 export interface WorkoutFilters {
@@ -62,13 +134,13 @@ export interface WorkoutFilters {
 }
 
 export interface PreviousWorkoutPerformance {
-  workoutId: number;
+  workoutId: string | number;
   title?: string;
   date?: string;
   completedAt?: string;
   exercises: {
-    id?: number;
-    exerciseId?: number;
+    id?: string | number;
+    exerciseId?: string | number;
     name: string;
     sets: {
       setNumber: number;

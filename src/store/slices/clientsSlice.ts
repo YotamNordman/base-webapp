@@ -134,7 +134,7 @@ const clientsSlice = createSlice({
       })
       .addCase(deleteClient.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.clients = state.clients.filter(client => client.id !== action.payload);
+        state.clients = state.clients.filter(client => String(client.id) !== action.payload);
       })
       .addCase(deleteClient.rejected, (state, action) => {
         state.status = 'failed';
@@ -148,7 +148,7 @@ export const { setStatusFilter, setSearchQuery, clearFilters } = clientsSlice.ac
 
 // Export selectors
 export const selectAllClients = (state: RootState) => state.clients.clients;
-export const selectClientById = (state: RootState, id: string) => state.clients.clients.find(client => client.id === id);
+export const selectClientById = (state: RootState, id: string) => state.clients.clients.find(client => String(client.id) === id);
 export const selectClientStatus = (state: RootState) => state.clients.status;
 export const selectClientError = (state: RootState) => state.clients.error;
 export const selectClientFilters = (state: RootState) => state.clients.filters;

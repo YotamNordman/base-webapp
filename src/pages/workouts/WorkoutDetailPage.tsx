@@ -118,14 +118,14 @@ const WorkoutDetailPage: React.FC = () => {
   }
   
   // Format the date to be more readable
-  const formattedDate = new Date(workout.scheduledFor).toLocaleDateString('he-IL', {
+  const formattedDate = workout.scheduledFor ? new Date(workout.scheduledFor).toLocaleDateString('he-IL', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  });
+  }) : '';
   
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

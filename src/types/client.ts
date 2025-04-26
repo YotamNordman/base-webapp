@@ -20,12 +20,12 @@ export interface MembershipDetails {
 }
 
 export interface ClientWorkout {
-  id: string;
+  id: string | number; // Allow both string and number for compatibility
   title: string;
 }
 
 export interface Client {
-  id: string;
+  id: string | number; // Allow both string and number for compatibility
   firstName: string;
   lastName: string;
   email: string;
@@ -48,4 +48,34 @@ export interface Client {
 export interface ClientFilter {
   status: string;
   search: string;
+}
+
+// Pagination params for API requests
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+}
+
+// Metadata for paginated responses
+export interface PaginationMetadata {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+// Standard API response format
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T | null;
+  errors: ApiError[] | null;
+  meta: any | null;
+}
+
+export interface ApiError {
+  code: string;
+  message: string;
+  field?: string;
 }
